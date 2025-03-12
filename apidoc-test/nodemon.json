@@ -1,0 +1,8 @@
+{
+    "watch": ["src"],
+    "ignore": ["apidoc"],
+    "ext": "js",
+    "delay": "500ms",
+    "exec": "apidoc -i src/ -o apidoc/"
+  }
+  

@@ -1,0 +1,16 @@
+{
+    "name": "API Documentation",
+    "version": "1.0.0",
+    "description": "Generated API Documentation",
+    "title": "My API Docs",
+    "url": "http://localhost:3000",
+    "template": {
+      "withCompare": false,
+      "withGenerator": false
+    },
+    "sampleUrl": false,
+    "input": "./api",
+    "output": "./apidoc"
+  }
+  
+  
