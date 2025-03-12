@@ -38,9 +38,6 @@ apidoc-compiler/            # Root of the repository
 │   ├── package.json        # Frontend dependencies & scripts
 │   ├── vite.config.ts      # Vite configuration file
 │
-│── apidoc-test/            #  (can be ignored)
-│   ├── (Contains testing code to observe live changes in backend)
-│
 │── .gitignore              # Git ignore file
 │── README.md               # Project documentation
 ```
