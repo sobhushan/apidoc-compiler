@@ -1,16 +1,32 @@
 {
-    "name": "API Documentation",
-    "version": "1.0.0",
-    "description": "Generated API Documentation",
-    "title": "My API Docs",
-    "url": "http://localhost:3000",
-    "template": {
-      "withCompare": false,
-      "withGenerator": false
+  "name": "API Documentation",
+  "version": "1.0.0",
+  "description": "Generated API Documentation",
+  "title": "My API Docs",
+  "url": "http://localhost:3000",
+  "template": {
+    "withCompare": false,
+    "withGenerator": false
+  },
+  "sampleUrl": false,
+  "input": "./api",
+  "output": "./apidoc",
+  "languages": {
+    "javascript": {
+      "extension": ".js",
+      "comment": "/** */"
     },
-    "sampleUrl": false,
-    "input": "./api",
-    "output": "./apidoc"
+    "python": {
+      "extension": ".py",
+      "comment": "\"\"\" \"\"\""
+    },
+    "perl": {
+      "extension": ".pl",
+      "comment": "#* *#"
+    },
+    "ruby": {
+      "extension": ".rb",
+      "comment": "=begin =end"
+    }
   }
-  
-  
+}

@@ -27,60 +27,76 @@ function generateDocs() {
     });
   });
 }
-// function generateDocs() {
-//   console.log("⏳ Generating API documentation...");
-//   exec("npx apidoc -i api/ -o docs/", (error, stdout, stderr) => {
-//     if (error) {
-//       console.error(`❌ Error generating docs: ${error.message}`);
-//       return;
-//     }
-//     if (stderr) console.error(`⚠️ APIDoc Warning: ${stderr}`);
-//     console.log("✅ API documentation updated successfully.");
-//   });
-// }
 
 // Route to update `api.js`
+// Define default API templates
+const defaultTemplates = {
+  javascript: `/**
+ * @api {get} /users Get users
+ * @apiName GetUsers
+ * @apiGroup Users
+ */
+`,
+  python: `"""
+@api {get} /users Get users
+@apiName GetUsers
+@apiGroup Users
+"""
+`,
+  perl: `#**
+# @api {get} /users Get users
+# @apiName GetUsers
+# @apiGroup Users
+#*
+`,
+  ruby: `=begin
+@api {get} /users Get users
+@apiName GetUsers
+@apiGroup Users
+=end
+`,
+};
+
+const fileExtensions = {
+  javascript: "api.js",
+  python: "api.py",
+  perl: "api.pl",
+  ruby: "api.rb",
+};
+
 app.post("/update-api", async (req, res) => {
-  const { code } = req.body;
+  const { code, language } = req.body;
+  const selectedFile = `api/${fileExtensions[language]}`;
 
   if (!code) {
     return res.status(400).json({ success: false, message: "No code provided." });
   }
 
   try {
-    // Write new API code to file
-    await fs.promises.writeFile("api/api.js", code);
-    console.log("✅ API file updated.");
+    // Write new API code to the selected file
+    await fs.promises.writeFile(selectedFile, code);
+    console.log(`✅ Updated API file: ${selectedFile}`);
 
-    // Wait for documentation to be generated
+    // 🔹 Instead of deleting, we clear the other files' contents
+    for (const file of Object.values(fileExtensions)) {
+      const filePath = `api/${file}`;
+      if (filePath !== selectedFile && fs.existsSync(filePath)) {
+        console.log(`🗑️ Clearing contents of: ${filePath}`);
+        await fs.promises.writeFile(filePath, ""); // Empty file instead of deleting
+      }
+    }
+
+    // Generate new docs
     await generateDocs();
-
-    // Send response *only after docs are updated*
     res.json({ success: true, message: "API file updated and docs generated successfully" });
+
   } catch (error) {
     console.error("❌ Error:", error);
     res.status(500).json({ success: false, message: "Error processing request" });
   }
 });
-// app.post("/update-api", (req, res) => {
-//   const { code } = req.body;
 
-//   if (!code) {
-//     return res.status(400).json({ success: false, message: "No code provided." });
-//   }
 
-//   // Save new code to `api/api.js`
-//   fs.writeFile("api/api.js", code, (err) => {
-//     if (err) {
-//       console.error("❌ Error saving API file:", err);
-//       return res.status(500).json({ success: false, message: "Error saving file" });
-//     }
-//     console.log("✅ API file updated.");
-//     generateDocs();
-
-//     res.json({ success: true, message: "API file updated successfully" });
-//   });
-// });
 
 // Start server
 app.listen(PORT, () => {
@@ -88,6 +104,10 @@ app.listen(PORT, () => {
 });
 
 
+
+
+//=============================================================================================================
+// // =========================================================================================================
 // const express = require("express");
 // const cors = require("cors");
 // const bodyParser = require("body-parser");
