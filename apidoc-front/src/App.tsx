@@ -70,9 +70,30 @@ function App() {
     setCode(getDefaultCode(selectedLang)); // Update code template
   };
 
+  // Function to validate syntax
+  const validateSyntax = (code: string, language: string): boolean => {
+    const patterns: Record<string, RegExp> = {
+      javascript: /\/\*\*[\s\S]*?@api[\s\S]*?\*\//,  // Matches /** ... @api ... */
+      python: /"""\s*@api[\s\S]*?"""/,               // Matches """ ... @api ... """
+      perl: /#\*\*[\s\S]*?@api[\s\S]*?#\*/,         // Matches #** ... @api ... #*
+      ruby: /=begin\s*@api[\s\S]*?=end/,            // Matches =begin ... @api ... =end
+    };
+  
+    return patterns[language]?.test(code) || false; // Returns true if the pattern matches
+  };
+  
+
   // Handle API validation and preview generation
   const handleRunPreview = async () => {
     setLoading(true);
+
+    // Validate syntax first
+  if (!validateSyntax(code, language)) {
+    alert(`❌ Syntax error detected in ${language} code!`);
+    setLoading(false);
+    return;
+  }
+
     
     try {
       console.log("Sending data:", { code, language });
