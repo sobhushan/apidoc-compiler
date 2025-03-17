@@ -47,82 +47,24 @@ function App() {
     return templates[lang];
   }
   
-  const validateAPIDoc = (code: string, language: string): { line: number, message: string }[] => {
-    const errors: { line: number, message: string }[] = [];
-  
-    // Define comment syntax for each language
-    const commentSyntax: Record<string, { start: string; end: string; prefix?: string  }> = {
-      javascript: { start: "/**", end: "*/", prefix: "*" },
-      python: { start: '"""', end: '"""' },
-      ruby: { start: "=begin", end: "=end" },
-      perl: { start: "#**", end: "#*", prefix: "#" },
-    };
-  
-    const syntax = commentSyntax[language.toLowerCase()];
-    if (!syntax) {
-      errors.push({ line: 0, message: `Unsupported language: ${language}` });
-      return errors;
-    }
-  
-    // Split code into lines
-    const lines = code.split("\n").map((line, index) => ({ line: index + 1, text: line.trim() }));
-  
-    // Step 1: Check if comment starts and ends correctly
-    if (!lines[0]?.text.startsWith(syntax.start)) {
-      errors.push({ line: 1, message: `Expected comment to start with " ${syntax.start} "` });
-    }
-    if (!lines[lines.length - 1]?.text.endsWith(syntax.end)) {
-      errors.push({ line: lines.length, message: `Expected comment to end with " ${syntax.end} "` });
-    }
-    // Step 2: Normalize lines for JavaScript & Perl (remove leading "*" or "#")
-    const normalizedLines = lines.map(({ line, text }) => ({
-      line,
-      text: syntax.prefix ? text.replace(new RegExp(`^\\${syntax.prefix}\\s?`), "") : text,
-    }));
-
-    // Step 4: Check for @api block anywhere inside the comment
-    const apiLines = normalizedLines.filter(({ text }) => text.startsWith("@api"));
-    if (apiLines.length === 0) {
-      errors.push({ line: 2, message: "Missing required @api block inside the comment" });
-    } else {
-      // Validate the format of the first @api line found
-      const { line, text } = apiLines[0];
-      const apiPattern = /^@api\s+\{(get|post|put|delete|patch|options|head)\}\s+\/\S+\s+.+$/i;
-      if (!apiPattern.test(text)) {
-        errors.push({ line, message: "Invalid @api format. Expected: @api {method} path title" });
-      }
-    }
-
-    // Step 4: Validate optional blocks if present
-    const optionalDirectives = [
-      { key: "apiGroup", pattern: /^@apiGroup\s+\S+$/, message: 'Invalid @apiGroup format. Expected: @apiGroup name' },
-      { key: "apiParam", pattern: /^@apiParam(\s*\(\S+\))?\s*\{\S+\}\s+\S+(?:\s*=.+)?\s+.+$/, message: 'Invalid @apiParam format. Expected: @apiParam [(group)] {type} field=defaultValue description' },
-      { key: "apiName", pattern: /^@apiName\s+\S+$/, message: 'Invalid @apiName format. Expected: @apiName name' }
-    ];
-  
-    for (const { key, pattern, message } of optionalDirectives) {
-      normalizedLines.forEach(({ line, text }) => {
-        if (text.startsWith(key) && !pattern.test(text)) {
-          errors.push({ line, message });
-        }
-      });
-    }
-  
-    return errors;
-  };
   
   const handleRunPreview = async () => {
     setLoading(true);
-    const validationErrors = validateAPIDoc(code, language);
-    setErrors(validationErrors);
-
-    if (validationErrors.length > 0) {
-      setLoading(false);
-      return;
-    }
-
+    setErrors([]);
+  
     try {
+      // Send code to AI for validation
+      const aiValidationResponse = await axios.post("http://localhost:3000/validate-code", { code, language });
+  
+      if (aiValidationResponse.data.errors.length > 0) {
+        setErrors(aiValidationResponse.data.errors);
+        setLoading(false);
+        return;
+      }
+  
+      // Send request to backend for preview update
       const response = await axios.post("http://localhost:3000/update-api", { code, language });
+  
       if (response.data.success) {
         setPreviewKey(prev => prev + 1);
       } else {
