@@ -122,7 +122,7 @@ function App() {
     }
 
     try {
-      const response = await axios.post("http://localhost:3000/update-api", { code, language });
+      const response = await axios.post("https://apidoc-compiler.onrender.com/update-api", { code, language });
       if (response.data.success) {
         setPreviewKey(prev => prev + 1);
       } else {
@@ -193,7 +193,7 @@ function App() {
         <div className={`col-md-7 p-4 ${theme === "dark" ? "bg-secondary text-light" : "bg-white text-dark"} rounded shadow`}>
           <h4 className="mb-3">API Docs Preview</h4>
           <div className="border rounded bg-light text-dark shadow-sm p-2" style={{ height: "95%" }}>
-            <iframe key={previewKey} title="API Docs Preview" src="http://localhost:3000/docs/index.html" className="w-100 h-100 border rounded" />
+            <iframe key={previewKey} title="API Docs Preview" src="https://apidoc-compiler.onrender.com/docs/index.html" className="w-100 h-100 border rounded" />
           </div>
         </div>
       </div>
