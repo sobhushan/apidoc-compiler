@@ -15,6 +15,12 @@ app.use("/docs", express.static("docs"));
 // Function to generate API docs
 function generateDocs() {
   return new Promise((resolve, reject) => {
+    const apiDir = path.join(__dirname, "api");
+
+    if (!fs.existsSync(apiDir)) {
+      console.error("❌ Error: The 'api/' directory does not exist.");
+      return reject(new Error("API directory not found."));
+    }
     console.log("⏳ Generating API documentation...");
     exec("npx apidoc -i api/ -o docs/", (error, stdout, stderr) => {
       if (error) {
