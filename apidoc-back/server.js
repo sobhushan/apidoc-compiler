@@ -22,7 +22,7 @@ function generateDocs() {
       return reject(new Error("API directory not found."));
     }
     console.log("⏳ Generating API documentation...");
-    exec("npx apidoc -i api/ -o docs/", (error, stdout, stderr) => {
+    exec("npx apidoc -i /tmp/api/ -o docs/", (error, stdout, stderr) => {
       if (error) {
         console.error(`❌ Error generating docs: ${error.message}`);
         reject(error);
@@ -72,7 +72,7 @@ const fileExtensions = {
 
 app.post("/update-api", async (req, res) => {
   const { code, language } = req.body;
-  const selectedFile = `api/${fileExtensions[language]}`;
+  const selectedFile = `/tmp/api/${fileExtensions[language]}`;
 
   if (!code) {
     return res.status(400).json({ success: false, message: "No code provided." });
@@ -80,6 +80,7 @@ app.post("/update-api", async (req, res) => {
 
   try {
     // Write new API code to the selected file
+    await fs.promises.mkdir("/tmp/api/", { recursive: true });
     await fs.promises.writeFile(selectedFile, code);
     console.log(`✅ Updated API file: ${selectedFile}`);
 
