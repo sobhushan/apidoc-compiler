@@ -24,7 +24,7 @@ function generateDocs() {
       return reject(new Error("API directory not found."));
     }
     console.log("⏳ Generating API documentation...");
-    exec("npx apidoc -i /tmp/api/ -o docs/", (error, stdout, stderr) => {
+    exec("chmod -R 755 node_modules/.bin/apidoc && node_modules/.bin/apidoc -i /tmp/api/ -o docs/", (error, stdout, stderr) => {
       if (error) {
         console.error(`❌ Error generating docs: ${error.message}`);
         reject(error);
