@@ -89,14 +89,14 @@ function App() {
       const { line, text } = apiLines[0];
       const apiPattern = /^@api\s+\{(get|post|put|delete|patch|options|head)\}\s+\/\S+\s+.+$/i;
       if (!apiPattern.test(text)) {
-        errors.push({ line, message: "Invalid @api format. Expected: @api {method} path title" });
+        errors.push({ line, message: "Invalid @api format. Expected: @api {method} /path title" });
       }
     }
 
     // Step 4: Validate optional blocks if present
     const optionalDirectives = [
       { key: "apiGroup", pattern: /^@apiGroup\s+\S+$/, message: 'Invalid @apiGroup format. Expected: @apiGroup name' },
-      { key: "apiParam", pattern: /^@apiParam(\s*\(\S+\))?\s*\{\S+\}\s+\S+(?:\s*=.+)?\s+.+$/, message: 'Invalid @apiParam format. Expected: @apiParam [(group)] {type} field=defaultValue description' },
+      // { key: "apiParam", pattern: /^@apiParam(\s*\(\S+\))?\s*\{\S+\}\s+\S+(?:\s*=.+)?\s+.+$/, message: 'Invalid @apiParam format. Expected: @apiParam [(group)] {type} field=defaultValue description' },
       { key: "apiName", pattern: /^@apiName\s+\S+$/, message: 'Invalid @apiName format. Expected: @apiName name' }
     ];
   
@@ -137,8 +137,8 @@ function App() {
 
   return (
     <div className={`container-fluid min-vh-100 d-flex flex-column ${theme === "dark" ? "bg-dark text-light" : "bg-light text-dark"} p-3`}>
-      <div className="position-relative mb-3">
-        <h2 className="position-absolute start-50 translate-middle-x text-info">API Documentation Editor</h2>
+      <div className="d-flex mb-3">
+        <h2 className="text-center w-100 text-info">API Documentation Editor</h2>
         <div className="d-flex">
           <button className="btn btn-outline-secondary ms-auto" 
           style={{
@@ -156,46 +156,51 @@ function App() {
           </button>
         </div>
       </div>
-      <div className="d-flex justify-content-center row flex-grow-1" >        
-      <div className={`col-md-5 p-4 border-end ${theme === "dark" ? "border-info bg-secondary text-light" : "border-dark bg-white text-dark"} rounded shadow`}>
-          <h4 className="mb-3">Edit API Documentation</h4>
-          <select className="form-select mb-3" value={language} onChange={(e) => {
-            const selectedLang = e.target.value as Language;
-            setLanguage(selectedLang);
-            setCode(getDefaultCode(selectedLang));
-          }}>
-            <option value="javascript">Java, JavaScript, C#, Go, Dart, PHP </option>
-            <option value="python">Python</option>
-            <option value="perl">Perl</option>
-            <option value="ruby">Ruby</option>
-          </select>
-          <div className="border rounded overflow-hidden">
-            <CodeMirror 
-              value={code} 
-              onChange={(val) => setCode(val)} 
-              extensions={[getLanguageExtension(language), lintGutter()]}
-              theme={theme === "dark" ? "dark" : "light"}
-              basicSetup={{ foldGutter: true }}
-            />
-          </div>
-          {errors.length > 0 && (
-            <div className="mt-3 alert alert-danger">
-              {errors.map((err, index) => (
-                <div key={index}>Line {err.line}: {err.message}</div>
-              ))}
+      <div className="row flex-grow-1 w-100 mx-auto d-flex justify-content-between" style={{ maxWidth: "96vw" }} >        
+        <div className={`card col-md-5 p-4 mx-auto border-end ${theme === "dark" ? "border-info bg-secondary text-light" : "border-dark bg-white text-dark"} rounded shadow`}>
+            <h4 className="mb-3">Edit API Documentation</h4>
+            <select className="form-select mb-3" value={language} onChange={(e) => {
+              const selectedLang = e.target.value as Language;
+              setLanguage(selectedLang);
+              setCode(getDefaultCode(selectedLang));
+            }}>
+              <option value="javascript">Java, JavaScript, C#, Go, Dart, PHP </option>
+              <option value="python">Python</option>
+              <option value="perl">Perl</option>
+              <option value="ruby">Ruby</option>
+            </select>
+            <div className="border rounded overflow-hidden">
+              <CodeMirror 
+                value={code} 
+                onChange={(val) => setCode(val)} 
+                extensions={[getLanguageExtension(language), lintGutter()]}
+                theme={theme === "dark" ? "dark" : "light"}
+                basicSetup={{ foldGutter: true }}
+              />
             </div>
-          )}
-          <button className="btn btn-info mt-3 w-100" onClick={handleRunPreview} disabled={loading}>
-            {loading ? "Updating..." : "Run Preview"}
-          </button>
-        </div>
-
-        <div className={`col-md-7 p-4 ${theme === "dark" ? "bg-secondary text-light" : "bg-white text-dark"} rounded shadow`}>
-          <h4 className="mb-3">API Docs Preview</h4>
-          <div className="border rounded bg-light text-dark shadow-sm p-2" style={{ height: "95%" }}>
-            <iframe key={previewKey} title="API Docs Preview" src="https://apidoc-compiler.onrender.com/docs/index.html" className="w-100 h-100 border rounded" />
+            {errors.length > 0 && (
+              <div className="mt-3 alert alert-danger">
+                {errors.map((err, index) => (
+                  <div key={index}>Line {err.line}: {err.message}</div>
+                ))}
+              </div>
+            )}
+            <button className="btn btn-info mt-3 w-100" onClick={handleRunPreview} disabled={loading}>
+              {loading ? "Updating..." : "Run Preview"}
+            </button>
           </div>
-        </div>
+
+          <div className={`card col-md-7 p-4 mx-auto ${theme === "dark" ? "bg-secondary text-light" : "bg-white text-dark"} rounded shadow`}>
+            <h4 className="mb-3">API Docs Preview</h4>
+            <div className="border rounded bg-light text-dark shadow-sm p-2 position-relative" style={{ height: "95%" }}>
+              {loading && (
+                <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center border rounded bg-light bg-opacity-75" style={{ backdropFilter: "blur(4px)" }}>
+                  <span className="text-dark fw-bold">Loading...</span>
+                </div>
+              )}
+              <iframe key={previewKey} title="API Docs Preview" src="https://apidoc-compiler.onrender.com/docs/index.html" className="w-100 h-100 border rounded" />
+            </div>
+          </div>
       </div>
     </div>
   );
