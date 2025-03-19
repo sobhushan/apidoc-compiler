@@ -2,7 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
-
 const { exec } = require("child_process");
 
 const app = express();
@@ -24,7 +23,7 @@ function generateDocs() {
       return reject(new Error("API directory not found."));
     }
     console.log("⏳ Generating API documentation...");
-    exec("chmod -R 755 node_modules/.bin/apidoc && node_modules/.bin/apidoc -i /tmp/api/ -o docs/", (error, stdout, stderr) => {
+    exec("apidoc -i api/ -o docs/", (error, stdout, stderr) => {
       if (error) {
         console.error(`❌ Error generating docs: ${error.message}`);
         reject(error);
@@ -37,34 +36,6 @@ function generateDocs() {
 }
 
 // Route to update `api.js`
-// Define default API templates
-const defaultTemplates = {
-  javascript: `/**
- * @api {get} /users Get users
- * @apiName GetUsers
- * @apiGroup Users
- */
-`,
-  python: `"""
-@api {get} /users Get users
-@apiName GetUsers
-@apiGroup Users
-"""
-`,
-  perl: `#**
-# @api {get} /users Get users
-# @apiName GetUsers
-# @apiGroup Users
-#*
-`,
-  ruby: `=begin
-@api {get} /users Get users
-@apiName GetUsers
-@apiGroup Users
-=end
-`,
-};
-
 const fileExtensions = {
   javascript: "api.js",
   python: "api.py",
@@ -74,7 +45,7 @@ const fileExtensions = {
 
 app.post("/update-api", async (req, res) => {
   const { code, language } = req.body;
-  const selectedFile = `/tmp/api/${fileExtensions[language]}`;
+  const selectedFile = `api/${fileExtensions[language]}`;
 
   if (!code) {
     return res.status(400).json({ success: false, message: "No code provided." });
@@ -82,7 +53,7 @@ app.post("/update-api", async (req, res) => {
 
   try {
     // Write new API code to the selected file
-    await fs.promises.mkdir("/tmp/api/", { recursive: true });
+    await fs.promises.mkdir("api/", { recursive: true });
     await fs.promises.writeFile(selectedFile, code);
     console.log(`✅ Updated API file: ${selectedFile}`);
 
@@ -104,8 +75,6 @@ app.post("/update-api", async (req, res) => {
     res.status(500).json({ success: false, message: "Error processing request" });
   }
 });
-
-
 
 // Start server
 app.listen(PORT, () => {
